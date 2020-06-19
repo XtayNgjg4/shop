@@ -1,20 +1,18 @@
 <template>
   <div class="container">
-    <van-nav-bar
-      title="商品详情"
-      left-text="返回"
-      left-arrow
-      @click-left="onClickLeft"
-      :fixed="true"
-      placeholder
-    />
+    <div class="topbar" style="height:46px;">
+      <div class="topbarView">
+        <van-icon name="arrow-left" @click="onClickLeft" />
+        <div v-for="(item,index) in topbarItem" :key="index" :class="activeFun(item)">{{item.name}}</div>
+      </div>
+    </div>
     <van-swipe :autoplay="3000">
       <van-swipe-item v-for="(image, index) in images" :key="index">
-        <img v-lazy="image.img" />
+        <img :src="image.img" class="swipePic" />
       </van-swipe-item>
     </van-swipe>
 
-    <div class="shopView">
+    <div class="shopView" ref="shopView">
       <div class="detailCon">
         <div class="shopTitle">{{shopName}}</div>
         <div class="shopPriceBox">
@@ -22,7 +20,7 @@
             ￥
             <span class="price">{{shopPrice}}</span>
           </div>
-          <div>{{value}}</div>
+          <div></div>
         </div>
       </div>
       <div class="shopSelect">
@@ -30,6 +28,16 @@
         <van-cell title="规格" is-link @click="show=true" />
       </div>
     </div>
+
+    <div class="shopCon" ref="shopCon">
+      <img src="//s3.mogucdn.com/mlcdn/c45406/180811_47jbl66876b75385bb6f47ffdbe96_751x819.jpg" alt />
+      <img src="//s3.mogucdn.com/mlcdn/c45406/180811_47jbl66876b75385bb6f47ffdbe96_751x819.jpg" alt />
+      <img src="//s3.mogucdn.com/mlcdn/c45406/180811_47jbl66876b75385bb6f47ffdbe96_751x819.jpg" alt />
+      <img src="//s3.mogucdn.com/mlcdn/c45406/180811_47jbl66876b75385bb6f47ffdbe96_751x819.jpg" alt />
+      <img src="//s3.mogucdn.com/mlcdn/c45406/180811_47jbl66876b75385bb6f47ffdbe96_751x819.jpg" alt />
+    </div>
+    <div class="shopCom" style="height:200px;background:#ffffff;" ref="shopCom">评论</div>
+    <div class="shopTj" style="height:200px;background:#ffffff;" ref="shopTj">推荐</div>
 
     <van-goods-action safe-area-inset-bottom>
       <van-goods-action-icon icon="chat-o" text="收藏" />
@@ -46,7 +54,7 @@
 
 <script>
 import { Toast } from "vant";
-import { getShopMsg, addCart,getCartList } from "@/assets/api/api";
+import { getShopMsg, addCart, getCartList } from "@/assets/api/api";
 export default {
   data() {
     return {
@@ -55,14 +63,62 @@ export default {
       show: false,
       shopName: "",
       shopPrice: 0,
-      gid: ""
+      gid: "",
+      topbarItem: [
+        { id: 1, name: "主图" },
+        { id: 2, name: "详情" },
+        { id: 3, name: "评价" },
+        { id: 4, name: "推荐" }
+      ],
+      current: 1,
+      number: 0,
+      view: 0,
+      detail: 0,
+      pl: 0,
+      tj: 0
     };
   },
   mounted() {
     this.shopid = this.$route.params.shopid;
     this._getShopMsg(this.shopid);
+    this.$nextTick(() => {
+      window.addEventListener("scroll", this.topTab);
+      this.view = this.$refs.shopView.getBoundingClientRect().top;
+      this.detail = this.$refs.shopCon.getBoundingClientRect().top;
+      this.pl = this.$refs.shopCom.getBoundingClientRect().top;
+      this.tj = this.$refs.shopTj.getBoundingClientRect().top;
+    });
   },
+
+
   methods: {
+    activeFun(item) {
+      if (item.id == this.current) {
+        return "active";
+      }
+    },
+    topTab() {
+      let scrollTop =
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop;
+
+      if (scrollTop - this.number < 0) {
+      } else {
+        if (scrollTop > this.view) {
+          this.current = 1;
+        }
+        if (scrollTop > this.detail) {
+          this.current = 2;
+        }
+        if (scrollTop > this.pl) {
+          this.current = 3;
+        }
+        if (scrollTop > this.tj) {
+          this.current = 4;
+        }
+      }
+    },
     _getShopMsg(id) {
       getShopMsg({
         goods_id: id,
@@ -75,7 +131,6 @@ export default {
         is_imgs: 1,
         is_team: 0
       }).then(res => {
-        console.log(res);
         this.images = res.data.imgs;
         this.shopName = res.data.name;
         this.shopPrice = res.data.price;
@@ -110,11 +165,46 @@ export default {
     value() {
       return this.$store.state.userId;
     }
+  },
+
+  destroyed() {
+    window.removeEventListener("scroll", this.topTab);
   }
 };
 </script>
 
 <style lang="scss" scoped>
+
+.swipePic {
+  width: 100%;
+  height: 100%;
+}
+.shopCon img {
+  width: 100%;
+  height: 100%;
+}
+.topbarView {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #ffffff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 46px;
+  line-height: 46px;
+  padding: 0 30px;
+  z-index: 99;
+  & > div {
+    font-size: 16px;
+  }
+  & > div.active {
+    color: red;
+    border-bottom: 1px solid red;
+  }
+}
+
 .content {
   padding: 16px 16px 160px;
 }

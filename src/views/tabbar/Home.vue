@@ -22,24 +22,20 @@
 
         <div class="tab">
           <div class="tabItem">
-            <img src="../../assets/tab/t1.png" alt />
-            <div class="tabTxt">商品</div>
+            <img src="../../assets/tab/m1.png" alt />
+            <div class="tabTxt">推荐</div>
           </div>
           <div class="tabItem">
-            <img src="../../assets/tab/t1.png" alt />
-            <div class="tabTxt">商品</div>
+            <img src="../../assets/tab/m2.png" alt />
+            <div class="tabTxt">上新</div>
           </div>
           <div class="tabItem">
-            <img src="../../assets/tab/t1.png" alt />
-            <div class="tabTxt">商品</div>
+            <img src="../../assets/tab/m3.png" alt />
+            <div class="tabTxt">热卖</div>
           </div>
           <div class="tabItem">
-            <img src="../../assets/tab/t1.png" alt />
-            <div class="tabTxt">商品</div>
-          </div>
-          <div class="tabItem">
-            <img src="../../assets/tab/t1.png" alt />
-            <div class="tabTxt">商品</div>
+            <img src="../../assets/tab/m4.png" alt />
+            <div class="tabTxt">精品</div>
           </div>
         </div>
 
@@ -49,36 +45,45 @@
           background="#ecf9ff"
           left-icon="volume-o"
         >通知内容通知内容通知内容通知内容通知内容通知内容通知内容通知内容通知内容通知内容</van-notice-bar>
-
-        <div class="shopList">
-          <div class="shopListTitle">
-            <img src="../../assets/home/tjpic.png" alt />
-          </div>
-          <van-list v-model="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
-            <div class="shopItem" v-for="(list , index) in shopList" :key="index">
-              <router-link class="shopLink" :to="{name:'shopDetail',params:{shopid:list.goods_id}}">
-                <img :src="list.img" alt />
-                <div class="shopCon">
-                  <div class="shopTitle">{{list.name}}</div>
-                  <div class="shopTag">
-                    <span>满99减50</span>
-                  </div>
-                  <div class="shopPrice">
-                    ￥
-                    <span>{{list.price}}</span>
-                  </div>
-                </div>
-              </router-link>
+        <van-skeleton title avatar :row="3" :loading="skeleton">
+          <div class="shopList">
+            <div class="shopListTitle">
+              <img src="../../assets/home/tjpic.png" alt />
             </div>
-          </van-list>
-        </div>
+            <van-list
+              v-model="loading"
+              :finished="finished"
+              finished-text="没有更多了"
+              @load="_getShopList"
+            >
+              <div class="shopItem" v-for="(list , index) in shopList" :key="index">
+                <router-link
+                  class="shopLink"
+                  :to="{name:'shopDetail',params:{shopid:list.goods_id}}"
+                >
+                  <img :src="list.img" alt />
+                  <div class="shopCon">
+                    <div class="shopTitle">{{list.name}}</div>
+                    <div class="shopTag">
+                      <span>满99减50</span>
+                    </div>
+                    <div class="shopPrice">
+                      ￥
+                      <span>{{list.price}}</span>
+                    </div>
+                  </div>
+                </router-link>
+              </div>
+            </van-list>
+          </div>
+        </van-skeleton>
       </van-pull-refresh>
     </div>
   </div>
 </template>
 
 <script>
-import { getShopList,getCartList } from '@/assets/api/api';
+import { getShopList, getCartList } from "@/assets/api/api";
 export default {
   name: "Home",
   data() {
@@ -88,63 +93,67 @@ export default {
       shopList: [],
       loading: false,
       finished: false,
+      page: 1,
       refreshing: false,
-      page:1
+      curPageData: [],
+      curPageLen: 0,
+      pageSize: 10,
+      skeleton: true
     };
   },
-  created(){
+  created() {
     this._getShopList();
     this._getCartList();
   },
   methods: {
-    _getShopList(){
-      getShopList({page:this.page,num:6,word :'',sort :'',cid :''}).then(res=>{
-        this.shopList= res.data;
-      })
-    },
     _getCartList() {
       getCartList({
-        uid:5
+        uid: 5
       }).then(res => {
-        this.$store.commit("SetCarTotal",res.data.num)
+        this.$store.commit("SetCarTotal", res.data.num);
+      });
+    },
+    _getShopList() {
+      if (this.page * this.pageSize < this.count) {
+        this.page++;
+      }
+      getShopList({
+        page: this.page,
+        num: this.pageSize,
+        word: "",
+        sort: "",
+        cid: ""
+      }).then(res => {
+        this.curPageData = res.data;
+        this.curPageLen = this.curPageData.length;
+
+        this.count = res.count;
+        if (this.page == 1) {
+          this.shopList = [];
+        }
+
+        this.shopList = this.shopList.concat(this.curPageData);
+        this.loading = false;
+
+        if (this.shopList.length >= this.count) {
+          this.finished = true;
+        }
+        this.skeleton= false
       });
     },
     onRefresh() {
-      setTimeout(() => {
-        this.$Toast("刷新成功");
+      getShopList({ page: 1, num: this.pageSize }).then(res => {
+        this.page = 1;
+        this.finished = false;
+        this.shopList = res.data;
         this.isLoading = false;
-        this.count++;
-      }, 1000);
-    },
-    onLoad() {
-      setTimeout(() => {
-        if (this.refreshing) {
-          this.shopList = [];
-          this.refreshing = false;
-        }
-
-        for (let i = 0; i < 4; i++) {
-          this.shopList.push(this.shopList[1]);
-        }
-        this.loading = false;
-
-        if (this.shopList.length >= 20) {
-          this.finished = true;
-        }
-      }, 1000);
-    },
-    onRefresh() {
-      // 清空列表数据
-      this.finished = false;
-      // 重新加载数据
-      // 将 loading 设置为 true，表示处于加载状态
-      this.loading = true;
-      this.onLoad();
+      });
     }
   }
 };
 </script>
 <style lang="scss" scoped>
+.container{background: #ffffff;}
 .shopPrice {
   font-size: 12px;
   color: #f23030;
@@ -209,6 +218,7 @@ export default {
   padding: 0 10px;
   margin: 10px 0;
 }
+.my-swipe{padding: 10px 0;}
 .tabItem {
   flex: 1;
   text-align: center;
@@ -236,10 +246,11 @@ export default {
 .search {
   padding: 10px;
   display: flex;
+  align-items: center;
 }
 .searchBtn {
   flex: 1;
-  background: #ffffff;
+  background: #f5f5f5;
   border-radius: 100px;
   width: 80%;
   padding: 5px 15px;
