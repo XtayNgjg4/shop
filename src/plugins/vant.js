@@ -28,7 +28,9 @@ import {
     Form,
     Field,
     Button,
-    Skeleton    
+    Skeleton,
+    SwipeCell,
+    Card    
 } from 'vant';
 
 Vue.use(Tabbar)
@@ -58,6 +60,8 @@ Vue.use(ActionSheet);
 Vue.use(Form);
 Vue.use(Field);
 Vue.use(Button);
-Vue.use(Skeleton );
+Vue.use(Skeleton);
+Vue.use(SwipeCell);
+Vue.use(Card);
 
 Vue.prototype.$Toast= Toast;

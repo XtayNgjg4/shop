@@ -47,6 +47,11 @@ Vue.use(VueRouter)
     component: () => import('../views/personal/setting.vue'),
   },
   {
+    path: '/Personal/fav',
+    name:'fav',
+    component: () => import('../views/personal/fav.vue'),
+  },
+  {
     path:'/shopDetail/shopDetail:shopid',
     name:'shopDetail',
     component:() => import('../views/shopDetail/shopDetail.vue'),

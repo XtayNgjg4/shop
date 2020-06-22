@@ -12,7 +12,7 @@
 
     <div class="cartList">
       <div class="cartItem" v-for="(item,index) in cartList" :key="index">
-        <van-checkbox v-model="checked"></van-checkbox>
+        <van-checkbox v-model="item.status" @click="change(item,$event)" ></van-checkbox>
         <img :src="item.thumb" alt />
         <div class="cartCon">
           <div class="cartTitle">{{item.name}}</div>
@@ -34,7 +34,7 @@
     </div>
 
     <div class="submit-bar">
-      <van-checkbox v-model="checked">全选</van-checkbox>
+      <van-checkbox v-model="allChecked">全选</van-checkbox>
       <div class="submitTxt" v-show="!ctrl">
         <span>合计：</span>￥
         <span class="price">30</span>.00
@@ -42,21 +42,22 @@
       <button v-show="!ctrl" class="submitBtn" @submit="onSubmit">去结算（{{selectedTotal}}）</button>
       <div class="ctrlBtn" v-show="ctrl">
         <button class="move">移入收藏夹</button>
-        <button class="delect">删除</button>
+        <button class="delect" @click="remove()">删除</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getCartList } from "@/assets/api/api";
+import { getCartList ,removeGoods} from "@/assets/api/api";
 import { Toast } from "vant";
 export default {
   data() {
     return {
       shopTotal: 0,
       selectedTotal: 0,
-      checked: true,
+      checked: false,
+      allChecked:false,
       ctrl: false,
       shopNum: 1,
       cartList:[]
@@ -68,12 +69,25 @@ export default {
     this._getCartList();
   },
   methods: {
+    change(item,e){
+      console.log(event.currentTarget)
+      console.log(item.status)
+    },
+    remove(){
+      removeGoods({
+           uid:5,
+           goods_id:""
+      }).then(res=>{
+
+      })
+    },
     _getCartList() {
       getCartList({
         uid:5
       }).then(res => {
         this.cartList =res.data.goods;
         this.shopTotal=res.data.num;
+        console.log(res)
       });
     },
     onClickRight() {

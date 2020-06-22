@@ -7,34 +7,93 @@
         <span>商品搜索：请输入关键字</span>
       </div>
     </div>
-    <van-tree-select height="100%" :items="items" :main-active-index.sync="active">
+    <van-tree-select
+      height="100%"
+      :items="items"
+      :main-active-index.sync="items.activeId"
+      @click-nav="onNavClick"
+    >
       <template #content>
-        <div v-if="active === 0">1</div>
-        <div v-if="active === 1">2</div>
+        <div class="shopList">
+          <div class="shopItem" v-for="(shop,index) in shopList" :key="index">
+            <router-link :to="{name:'shopDetail',params:{shopid:shop.goods_id}}">
+              <img :src="shop.img" alt />
+              <div class="shopItemName">{{shop.name}}</div>
+            </router-link>
+          </div>
+        </div>
       </template>
     </van-tree-select>
   </div>
 </template>
 
 <script>
+import { getCats, getShopList } from "@/assets/api/api";
 export default {
   data() {
     return {
       active: 0,
-      items: [{ text: "手机" }, { text: "商品" }]
+      items: [],
+      shopList:[],
+      cid:[]
     };
   },
 
   components: {},
-
+  created() {
+    this._getCats();
+    this._getShopList(1);
+  },
   methods: {
+    _getCats() {
+      getCats().then(res => {
+        this.cid=res.data.id;
+        for (let index = 0; index < res.data.length; index++) {
+          this.items.push({
+            activeId: res.data[index].id,
+            text: res.data[index].name
+          });
+        }
+      });
+    },
+    _getShopList(id) {
+      getShopList({ cid: id }).then(res => {
+        this.shopList = res.data
+      });
+    },
     onClickLeft() {
-      console.log(1);
+      
+    },
+    onNavClick(index) {
+      let cid = this.items[index].activeId;
+      this._getShopList(cid);
     }
   }
 };
 </script>
 <style lang='scss' scoped>
+.shopList{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  .shopItem{
+    width: 49%;
+    margin-bottom: 15px;
+    img{
+      width: 100%;
+      
+    }
+    .shopItemName{
+      font-size: 12px;
+      overflow : hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+}
 .van-tree-select__content {
   padding: 10px 10px 50px 10px;
 }

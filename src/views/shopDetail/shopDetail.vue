@@ -40,7 +40,7 @@
     <div class="shopTj" style="height:200px;background:#ffffff;" ref="shopTj">推荐</div>
 
     <van-goods-action safe-area-inset-bottom>
-      <van-goods-action-icon icon="chat-o" text="收藏" />
+      <van-goods-action-icon :icon="flag?'star':'star-o'" text="收藏" @click="_addFav" />
       <van-goods-action-icon icon="shop-o" text="购物车" />
       <van-goods-action-button color="#7232dd" type="warning" text="加入购物车" @click="_addCart" />
       <van-goods-action-button color="#7232dd" type="danger" text="立即购买" />
@@ -54,7 +54,13 @@
 
 <script>
 import { Toast } from "vant";
-import { getShopMsg, addCart, getCartList } from "@/assets/api/api";
+import {
+  getShopMsg,
+  addCart,
+  getCartList,
+  addfav,
+  getFavList,
+} from "@/assets/api/api";
 export default {
   data() {
     return {
@@ -75,12 +81,16 @@ export default {
       view: 0,
       detail: 0,
       pl: 0,
-      tj: 0
+      tj: 0,
+      flag: false
     };
   },
-  mounted() {
+  created() {
     this.shopid = this.$route.params.shopid;
     this._getShopMsg(this.shopid);
+    this._getFavList();
+  },
+  mounted() {
     this.$nextTick(() => {
       window.addEventListener("scroll", this.topTab);
       this.view = this.$refs.shopView.getBoundingClientRect().top;
@@ -90,8 +100,38 @@ export default {
     });
   },
 
-
   methods: {
+    _addFav() {
+      this.flag = !this.flag;
+      if (this.flag) {
+        addfav({
+          uid: this.value,
+          goods_id: this.gid,
+          act_type: "addfav"
+        }).then(res => {
+          Toast.success("成功加入收藏夹");
+        });
+      } else {
+        addfav({
+          uid: this.value,
+          goods_id: this.gid,
+          act_type: "del_fav"
+        }).then(res => {
+          Toast.success("已取消加入收藏夹");
+        });
+      }
+    },
+    _getFavList() {
+      getFavList({
+        uid: this.value
+      }).then(res => {
+        for (let index = 0; index < res.data.length; index++) {
+          if (res.data[index].goods_id == this.$route.params.shopid) {
+            this.flag = true;
+          }
+        }
+      });
+    },
     activeFun(item) {
       if (item.id == this.current) {
         return "active";
@@ -174,7 +214,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .swipePic {
   width: 100%;
   height: 100%;
@@ -208,8 +247,8 @@ export default {
 .content {
   padding: 16px 16px 160px;
 }
-.shopView {
-  padding-bottom: 60px;
+.shopSelect {
+  margin: 10px 0;
 }
 .detailCon {
   padding: 15px;

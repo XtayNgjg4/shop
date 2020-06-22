@@ -1,6 +1,6 @@
 export const state = {
-	userId:'',
+	userId:5,
 	carTotal:0,
 	carListRefresh:false,
-	loginSuccess:false
+	loginSuccess:true
 }

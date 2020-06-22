@@ -30,7 +30,7 @@
 
     <div class="look">
       <van-grid :clickable="true" :column-num="3">
-        <van-grid-item icon="paid" badge="998" text="收藏夹" />
+        <van-grid-item icon="paid" badge="998" text="收藏夹" :to="{name:'fav'}"/>
         <van-grid-item icon="paid" badge="168" text="足迹" />
         <van-grid-item icon="paid" badge="18" text="红包卡券" />
         <van-grid-item icon="paid" text="待付款" />
