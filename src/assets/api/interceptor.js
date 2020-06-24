@@ -7,7 +7,7 @@ import { Toast, Col } from 'vant';
 import store from '@/store/index'
 
 const yecCfg = {
-	ymUrl: "http://mzs.yunmai.net/", // 商城地址
+	ymUrl: "https://www.meizuanshuo.com/", // 商城地址
 	access_token: 'openyuneccn201800001', //通信令牌，和接口文件yunec_API.php里的access_token保持一致
 }
 

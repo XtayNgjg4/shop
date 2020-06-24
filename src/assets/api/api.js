@@ -17,7 +17,7 @@ export const getCartList = params => get("cart", params)
 export const removeGoods=params => post('remove_goods',params)
 
 //获取购物车状态
-
+export const setCartStatus=params => post('set_cart_status',params)
 
 //获取商品分类
 export const getCats = params => get("cats", params)
