@@ -30,7 +30,7 @@
           </div>-->
           <div class="cartPrice clearfix">
             <div class="fl">
-              <van-stepper v-model="item.num" />
+              <van-stepper v-model="item.num" @plus="plus(item)" @minus="minus(item)" />
             </div>
             <div class="submitTxt fr">
               ￥
@@ -45,23 +45,29 @@
       <van-checkbox v-model="allChecked" @click="all">全选</van-checkbox>
       <div class="submitTxt" v-show="!ctrl">
         <span>合计：</span>￥
-        <span class="price">30</span>.00
+        <span class="price">{{totalPrice}}</span>.00
       </div>
       <button v-show="!ctrl" class="submitBtn" @submit="onSubmit">去结算（{{selectedTotal}}）</button>
       <div class="ctrlBtn" v-show="ctrl">
         <button class="move">移入收藏夹</button>
-        <button class="delect" @click="remove()">删除</button>
+        <button class="delect" @click="remove">删除</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getCartList, removeGoods, setCartStatus } from "@/assets/api/api";
+import {
+  getCartList,
+  removeGoods,
+  setCartStatus,
+  addCart
+} from "@/assets/api/api";
 import { Toast } from "vant";
 export default {
   data() {
     return {
+      totalPrice: 0,
       shopTotal: 0,
       selectedTotal: 0,
       checked: false,
@@ -92,6 +98,7 @@ export default {
           status: 1
         });
       }
+      this._getCartList();
       // console.log(event.currentTarget);
       // console.log(item.status);
       // console.log(item.goods_id);
@@ -122,10 +129,18 @@ export default {
       }
     },
     remove() {
+      let allId = "";
+      this.cartList.forEach(item => {
+        if (item.status == 1) {
+          allId = allId + `@${item.goods_id}`;
+        }
+      });
       removeGoods({
         uid: 5,
-        goods_id: this.rmId.join("@")
+        goods_id: allId,
+        spec: ""
       }).then(res => {
+        console.log(res);
         this._getCartList();
       });
     },
@@ -133,29 +148,42 @@ export default {
       getCartList({
         uid: 5
       }).then(res => {
+        this.totalPrice = 0;
+        this.selectedTotal = 0;
         this.cartList = res.data.goods;
         this.shopTotal = res.data.num;
         let cartStatus = [];
         this.cartList.forEach(item => {
           if (item.status == 1) {
             cartStatus.push(item.status);
+            this.selectedTotal = this.selectedTotal + parseInt(item.num);
+            this.totalPrice = this.totalPrice + parseInt(item.amount);
           }
         });
-        console.log(cartStatus.length);
         if (cartStatus.length == this.cartList.length) {
           this.allChecked = true;
         } else {
           this.allChecked = false;
         }
-
-        // for (let index = 0; index < this.cartList.length; index++) {
-        //   this.allId.push(this.cartList[index].goods_id);
-        //   if (this.cartList[index].status == 1) {
-        //     this.rmId.push(parseInt(this.cartList[index].goods_id) );
-        //   }
-        // }
-        console.log(this.cartList);
+        console.log(res);
       });
+    },
+    plus(item) {
+      
+      let num=1;
+      if (item.status == 1) {
+        addCart({
+          uid: 5,
+          goods_id: item.goods_id,
+          num: num++
+        }).then(res => {
+          console.log(res);
+           this._getCartList();
+        });
+      }
+    },
+    minus(item) {
+     
     },
     onClickRight() {
       this.ctrl = !this.ctrl;
@@ -245,7 +273,7 @@ export default {
   line-height: 40px;
   border: none;
   border-radius: 999px;
-  padding: 0 15px;
+  padding: 0 10px;
   font-size: 14px;
   color: #fff;
 }
