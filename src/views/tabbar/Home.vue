@@ -56,20 +56,20 @@
               finished-text="没有更多了"
               @load="_getShopList"
             >
-              <div class="shopItem" v-for="(list , index) in shopList" :key="index">
+              <div class="shopItem" v-for="list in shopList" :key="list.item_id">
                 <router-link
                   class="shopLink"
                   :to="{name:'shopDetail',params:{shopid:list.goods_id}}"
                 >
-                  <img :src="list.img" alt />
+                  <img :src="list.path" alt />
                   <div class="shopCon">
-                    <div class="shopTitle">{{list.name}}</div>
+                    <div class="shopTitle">{{list.item_name}}</div>
                     <div class="shopTag">
                       <span>满99减50</span>
                     </div>
                     <div class="shopPrice">
                       ￥
-                      <span>{{list.price}}</span>
+                      <span>{{list.unit_price_web}}</span>
                     </div>
                   </div>
                 </router-link>
@@ -103,7 +103,7 @@ export default {
   },
   created() {
     this._getShopList();
-    this._getCartList();
+    // this._getCartList();
   },
   methods: {
     _getCartList() {
@@ -118,16 +118,14 @@ export default {
         this.page++;
       }
       getShopList({
-        page: this.page,
-        num: this.pageSize,
-        word: "",
-        sort: "",
-        cid: ""
+        page:this.page
       }).then(res => {
-        this.curPageData = res.data;
+        console.log(res)
+
+        this.curPageData = res.data.info;
         this.curPageLen = this.curPageData.length;
 
-        this.count = res.count;
+        this.count = res.data.total;
         if (this.page == 1) {
           this.shopList = [];
         }
@@ -142,10 +140,10 @@ export default {
       });
     },
     onRefresh() {
-      getShopList({ page: 1, num: this.pageSize }).then(res => {
+      getShopList({ page: 1 }).then(res => {
         this.page = 1;
         this.finished = false;
-        this.shopList = res.data;
+        this.shopList = res.data.info;
         this.isLoading = false;
       });
     }

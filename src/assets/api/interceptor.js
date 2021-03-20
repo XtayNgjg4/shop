@@ -6,22 +6,24 @@ import QS from 'qs';
 import { Toast, Col } from 'vant';
 import store from '@/store/index'
 
-const yecCfg = {
-	ymUrl: "https://www.meizuanshuo.com/", // 商城地址
-	access_token: 'openyuneccn201800001', //通信令牌，和接口文件yunec_API.php里的access_token保持一致
-}
+// const yecCfg = {
+// 	ymUrl: "https://zuodengnishi.beautycms.com"+"/mobile_api/v1", // 商城地址
+// 	// access_token: 'openyuneccn201800001', //通信令牌，和接口文件yunec_API.php里的access_token保持一致
+// }
 
-export const ApiBaseUrl = `${yecCfg.ymUrl}`
-export const ApiAccess=`apidata.html?access_token=${yecCfg.access_token}&ym_client=4&act=`
-// 环境的切换
-if (process.env.NODE_ENV == 'development') {    
-    axios.defaults.baseURL = ApiBaseUrl;
-} else if (process.env.NODE_ENV == 'debug') {    
-    axios.defaults.baseURL = ApiBaseUrl;
-} else if (process.env.NODE_ENV == 'production') {    
-    axios.defaults.baseURL = ApiBaseUrl;
-}
+// export const ApiBaseUrl = `${yecCfg.ymUrl}`
+// // export const ApiAccess=`apidata.html?access_token=${yecCfg.access_token}&ym_client=4&act=`
+// // 环境的切换
+// if (process.env.NODE_ENV == 'development') {    
+//     axios.defaults.baseURL = ApiBaseUrl;
+// } else if (process.env.NODE_ENV == 'debug') {    
+//     axios.defaults.baseURL = ApiBaseUrl;
+// } else if (process.env.NODE_ENV == 'production') {    
+//     axios.defaults.baseURL = ApiBaseUrl;
+// }
 
+
+axios.defaults.baseURL = '/api'
 // 请求超时时间
 axios.defaults.timeout = 10000;
 
@@ -33,8 +35,12 @@ axios.interceptors.request.use(
     config => {
         // 每次发送请求之前判断是否存在token，如果存在，则统一在http请求的header都加上token，不用每次请求都手动添加了
         // 即使本地存在token，也有可能token是过期的，所以在响应拦截器中要对返回状态进行判断
-        const token = store.state.token;        
-        token && (config.headers.Authorization = token);        
+        // const token = store.state.token;        
+        // token && (config.headers.Authorization = token);     
+         Toast.loading({
+            message: '加载中...',
+            forbidClick: true,
+          });
         return config;    
     },    
     error => {        
@@ -43,7 +49,8 @@ axios.interceptors.request.use(
 
 // 响应拦截器
 axios.interceptors.response.use(    
-    response => {        
+    response => {  
+        Toast.clear();      
         if (response.status === 200) {            
             return Promise.resolve(response);        
         } else {            
@@ -113,7 +120,7 @@ axios.interceptors.response.use(
  */
 export function get(url, params){    
     return new Promise((resolve, reject) =>{        
-        axios.get(ApiAccess+url, {            
+        axios.get(url, {            
             params: params        
         })        
         .then(res => {            
@@ -131,7 +138,7 @@ export function get(url, params){
  */
 export function post(url, params) {    
     return new Promise((resolve, reject) => {         
-        axios.post(ApiAccess+url, params)        
+        axios.post(url, params)        
         .then(res => {
             resolve(res.data);        
         })        
